@@ -78,12 +78,14 @@ class IndexesTest(ReusedSQLTestCase, TestUtils):
 
         self.assert_eq(kidx.to_series(), pidx.to_series())
         self.assert_eq(kidx.to_series(name="a"), pidx.to_series(name="a"))
+        self.assert_eq(kidx.to_series(name=1), pidx.to_series(name=1))
 
         # With name
         pidx.name = "Koalas"
         kidx.name = "Koalas"
         self.assert_eq(kidx.to_series(), pidx.to_series())
         self.assert_eq(kidx.to_series(name=("x", "a")), pidx.to_series(name=("x", "a")))
+        self.assert_eq(kidx.to_series(name=("x", 1)), pidx.to_series(name=("x", 1)))
 
         # With tupled name
         pidx.name = ("x", "a")
@@ -190,6 +192,15 @@ class IndexesTest(ReusedSQLTestCase, TestUtils):
         self.assertEqual(kdf.index.names, pdf.index.names)
         self.assertEqual(kser.index.names, pser.index.names)
 
+        pidx.name = 1
+        kidx.name = 1
+        self.assertEqual(kidx.name, pidx.name)
+        self.assertEqual(kidx.names, pidx.names)
+        self.assert_eq(kidx, pidx)
+        self.assertEqual(kdf.index.name, pdf.index.name)
+        self.assertEqual(kdf.index.names, pdf.index.names)
+        self.assertEqual(kser.index.names, pser.index.names)
+
         with self.assertRaisesRegex(ValueError, "Names must be a list-like"):
             kidx.names = "hi"
 
@@ -216,6 +227,11 @@ class IndexesTest(ReusedSQLTestCase, TestUtils):
         pidx.names = ["renamed_number", None]
         kidx.names = ["renamed_number", None]
         self.assertEqual(kidx.names, pidx.names)
+
+        pidx.names = [1, 2]
+        kidx.names = [1, 2]
+        self.assertEqual(kidx.names, pidx.names)
+
         if LooseVersion(pyspark.__version__) < LooseVersion("2.4"):
             # PySpark < 2.4 does not support struct type with arrow enabled.
             with self.sql_conf({SPARK_CONF_ARROW_ENABLED: False}):
@@ -718,6 +734,10 @@ class IndexesTest(ReusedSQLTestCase, TestUtils):
 
         pidx = pidx.rename(["my", "name", "is"])
         kidx = kidx.rename(["my", "name", "is"])
+        self.assert_eq(pidx, kidx)
+
+        pidx = pidx.rename([1, 2, 3])
+        kidx = kidx.rename([1, 2, 3])
         self.assert_eq(pidx, kidx)
 
     def test_multiindex_set_names(self):
