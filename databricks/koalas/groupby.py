@@ -95,6 +95,7 @@ class GroupBy(object, metaclass=ABCMeta):
         agg_columns_selected: bool = False,
         agg_columns: List = None,
     ):
+        """A constructor for attribute type hints."""
         self._kser = kser
         self._kdf = kdf
         self._groupkeys = groupkeys
@@ -2453,9 +2454,14 @@ class DataFrameGroupBy(GroupBy):
         column_labels_to_exlcude: Set[Tuple],
         agg_columns: List[Tuple] = None,
     ):
+        self._kdf = kdf
+        self._groupkeys = by
+        self._as_index = as_index
+        self._dropna = dropna
+        self._column_labels_to_exlcude = column_labels_to_exlcude
 
-        _agg_columns_selected = agg_columns is not None
-        if _agg_columns_selected:
+        self._agg_columns_selected = agg_columns is not None
+        if self._agg_columns_selected:
             for label in agg_columns:
                 if label in column_labels_to_exlcude:
                     raise KeyError(label)
@@ -2466,17 +2472,7 @@ class DataFrameGroupBy(GroupBy):
                 if not any(label == key._column_label and key._kdf is kdf for key in by)
                 and label not in column_labels_to_exlcude
             ]
-        _agg_columns = [kdf[label] for label in agg_columns]
-
-        super().__init__(
-            kdf=kdf,
-            groupkeys=by,
-            as_index=as_index,
-            dropna=dropna,
-            column_labels_to_exlcude=column_labels_to_exlcude,
-            agg_columns_selected=_agg_columns_selected,
-            agg_columns=_agg_columns,
-        )
+        self._agg_columns = [kdf[label] for label in agg_columns]
 
     def __getattr__(self, item: str) -> Any:
         if hasattr(MissingPandasLikeDataFrameGroupBy, item):
