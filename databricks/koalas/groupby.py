@@ -2637,11 +2637,14 @@ class SeriesGroupBy(GroupBy):
             return SeriesGroupBy(kser, new_by_series, as_index=as_index, dropna=dropna)
 
     def __init__(self, kser: Series, by: List[Series], as_index: bool = True, dropna: bool = True):
+        self._kser = kser
+        self._groupkeys = by
+
         if not as_index:
             raise TypeError("as_index=False only valid with DataFrame")
-        super().__init__(
-            kser=kser, groupkeys=by, as_index=as_index, dropna=dropna, agg_columns_selected=True,
-        )
+        self._as_index = True
+        self._dropna = dropna
+        self._agg_columns_selected = True
 
     def __getattr__(self, item: str) -> Any:
         if hasattr(MissingPandasLikeSeriesGroupBy, item):
